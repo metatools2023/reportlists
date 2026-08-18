@@ -25,13 +25,16 @@ site/                index.html + app.js + style.css + data/（生成物）
 
 ## 状态
 
-M1 数据管道开发中（见任务清单）：
+M1 数据管道已完成（2026-08-19，本地 + CI 全链路验证通过）：
 
-- [ ] fetch_reports.py：列表抓取、JSONP 兼容、增量合并、按月分片
-- [ ] backfill.py：15 字段裁剪、1s 间隔、断点续跑、失败清单（本地优先运行）
-- [ ] build_index.py：tags.json + index-YYYY.json
-- [ ] update-daily.yml：每日 cron + push 触发 + change-only 部署
-- [ ] smoke test 全链路
+- [x] fetch_reports.py：每日增量（北京时间昨天）、JSONP 兼容、周末零数据豁免
+- [x] backfill.py：15 字段裁剪、1s 间隔、state.json 断点续跑、每 10 单元 commit、失败清单、顺序分批 `--max-units 35`
+- [x] build_index.py：tags.json（5 维度）+ index-YYYY.json（按年搜索索引）
+- [x] update-daily.yml：cron 08:00 UTC + push 触发 + change-only 部署（concurrency 串行 + pull --rebase 防竞态）
+- [x] backfill.yml：手动分批灾备（默认 35 单元/次）
+- [ ] 全量历史回填执行（345 单元 ≈ 10 批，本地运行中）
+
+M2 前端站点：待开发
 
 ## License
 
