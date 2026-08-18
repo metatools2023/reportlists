@@ -1,18 +1,18 @@
 # 每日增量抓取 + change-only 部署
-# TODO(M1)：脚本就绪后启用 schedule + push 触发：
-#   on:
-#     schedule:
-#       - cron: "0 8 * * *"   # 每日 08:00 UTC
-#     push:
-#       paths:
-#         - "site/**"
-#         - "!site/data/**"
-#         - ".github/workflows/update-daily.yml"
-# 当前仅保留手动触发，避免骨架阶段自动运行失败
+# schedule: 每日 08:00 UTC（北京 16:00，收盘后研报基本入库）
+# push: 站点代码/抓取脚本变更时立即重跑并部署（数据提交不触发，防循环）
 name: Update daily
 
 on:
+  schedule:
+    - cron: "0 8 * * *"
   workflow_dispatch:
+  push:
+    paths:
+      - "site/**"
+      - "!site/data/**"
+      - "scripts/**"
+      - ".github/workflows/update-daily.yml"
 
 permissions:
   contents: write
@@ -30,11 +30,27 @@ jobs:
       - name: Fetch yesterday's reports
         run: python3 scripts/fetch_reports.py --repo-root .
 
-      # TODO(M1)：实现后启用——
-      # - name: Commit data if changed（change-only，守 500 部署/月额度）
-      # - name: Deploy to Cloudflare Pages
-      #   env:
-      #     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      #     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      #   run: npx --yes wrangler@3 pages deploy site --project-name=reportlists --commit-dirty=true
-      # 健康检查：抓取失败/空数据时跳过部署，不用旧数据覆盖
+      - name: Build index
+        run: python3 scripts/build_index.py --repo-root .
+
+      - name: Commit data if changed
+        id: commit
+        run: |
+          if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard -- site/data)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No data changes"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add site/data
+            git commit -m "data: daily update ($(date -u +%Y-%m-%d))"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        if: steps.commit.outputs.changed == 'true' || github.event_name != 'schedule'
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@3 pages deploy site --project-name=reportlists --commit-dirty=true

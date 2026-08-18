@@ -1,14 +1,18 @@
-# 历史回填（灾备通道，本地优先运行同一 scripts/backfill.py）
-# 用法：Actions 页面手动触发（workflow_dispatch），断点续跑自动跳过已完成单元
+# 历史回填灾备通道（本地优先运行同一 scripts/backfill.py，断点续跑）
+# 一次触发 = 一批（默认 35 单元 ≈ 13 分钟），全量约 10 次触发；max_units=0 可一次跑完
 name: Backfill report history
 
 on:
   workflow_dispatch:
     inputs:
       from:
-        description: "起始月份（YYYY-MM，留空则从 state.json 断点继续）"
+        description: "起始月份（YYYY-MM，留空则从 2017-01 / state.json 断点继续）"
         required: false
         default: ""
+      max_units:
+        description: "本次最多处理单元数（0 = 不限）"
+        required: false
+        default: "35"
 
 permissions:
   contents: write
@@ -25,7 +29,15 @@ jobs:
           python-version: "3.x"
 
       - name: Run backfill
-        run: python3 scripts/backfill.py --repo-root . --interval 1
+        id: backfill
+        run: |
+          ARGS="--repo-root . --interval 1 --max-units ${{ inputs.max_units }}"
+          if [ -n "${{ inputs.from }}" ]; then ARGS="$ARGS --from ${{ inputs.from }}"; fi
+          python3 scripts/backfill.py $ARGS
 
-      # TODO(M1)：实现后启用——每 ~10 单元 commit+push 由脚本内部完成，
-      # 结束后若数据有变化则触发部署（与 update-daily.yml 共用 deploy 步骤）
+      - name: Deploy to Cloudflare Pages
+        if: steps.backfill.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@3 pages deploy site --project-name=reportlists --commit-dirty=true
