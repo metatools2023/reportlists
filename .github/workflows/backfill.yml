@@ -1,0 +1,31 @@
+# 历史回填（灾备通道，本地优先运行同一 scripts/backfill.py）
+# 用法：Actions 页面手动触发（workflow_dispatch），断点续跑自动跳过已完成单元
+name: Backfill report history
+
+on:
+  workflow_dispatch:
+    inputs:
+      from:
+        description: "起始月份（YYYY-MM，留空则从 state.json 断点继续）"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Run backfill
+        run: python3 scripts/backfill.py --repo-root . --interval 1
+
+      # TODO(M1)：实现后启用——每 ~10 单元 commit+push 由脚本内部完成，
+      # 结束后若数据有变化则触发部署（与 update-daily.yml 共用 deploy 步骤）

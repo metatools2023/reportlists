@@ -1,0 +1,19 @@
+# 本地文档，不入公开仓库（含反爬细节/内部计划）
+EASTMONEY_API.md
+plan.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# 临时文件
+*.tmp
+*.log
