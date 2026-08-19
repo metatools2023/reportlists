@@ -2,6 +2,7 @@
 """构建索引：由 site/data/reports-YYYY-MM.json 分片生成
 - site/data/tags.json       标签聚合（industry/org/rating/researcher/stock；
                              researcher/stock 仅保留 top 1000，其余维度全量）
+                             含 years 元数据（年份列表+计数，倒序，供前端全库搜索）
 - site/data/index-YYYY.json 按年搜索索引（精简字段 i/d/t/o/n/r/q/s/a，每条一行）
 
 字段映射：i=infoCode d=publishDate t=title o=orgSName n=industryName
@@ -76,6 +77,8 @@ def build(repo_root):
     tags = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "total": total,
+        "years": [{"year": yr, "count": len(rows)}
+                  for yr, rows in sorted(years.items(), key=lambda kv: kv[0], reverse=True)],
         "tags": {
             dim: [{"name": n, "count": c} for n, c in sorted(
                 cnt.items(), key=lambda kv: (-kv[1], kv[0]))[:TOP_LIMITS.get(dim)]]

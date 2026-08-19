@@ -3,21 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow">
-  <title>reportlists</title>
-  <style>
-    body { font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-           display: flex; min-height: 100vh; margin: 0; align-items: center; justify-content: center;
-           background: #0f1420; color: #e6e9f0; }
-    main { text-align: center; }
-    h1 { font-size: 2rem; letter-spacing: .1em; }
-    p { color: #8b93a7; }
-  </style>
+  <title>reportlists · 券商研报索引</title>
+  <meta name="description" content="券商研报元数据索引：个股 / 行业 / 策略研报 43 万+ 篇（2017 至今），按行业、机构、评级、研究员、个股多维聚类浏览与搜索，一键直达原文 PDF。">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
+<header>
+  <div class="brand">
+    <span class="logo">reportlists</span>
+    <span class="sub" id="brandSub">券商研报索引</span>
+  </div>
+  <div class="searchbar">
+    <input id="q" type="search" placeholder="搜索标题 / 机构 / 研究员 / 个股…" autocomplete="off">
+    <div class="scope" id="scopeSwitch" title="搜索与列表的数据范围">
+      <button data-scope="loaded" class="on">已加载</button>
+      <button data-scope="year">近1年</button>
+      <button data-scope="deep">全库</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <nav class="types" id="typeTabs" aria-label="报告类型">
+      <button data-t="" class="on">全部</button>
+      <button data-t="0">个股</button>
+      <button data-t="1">行业</button>
+      <button data-t="2">策略</button>
+    </nav>
+    <section class="cloud">
+      <div class="dims" id="dimTabs" aria-label="标签维度">
+        <button data-dim="industry" class="on">行业</button>
+        <button data-dim="org">机构</button>
+        <button data-dim="rating">评级</button>
+        <button data-dim="researcher">研究员</button>
+        <button data-dim="stock">个股</button>
+      </div>
+      <input id="tagq" type="search" placeholder="筛选标签名…" autocomplete="off">
+      <div class="cloud-chips" id="cloud"></div>
+    </section>
+  </aside>
+
   <main>
-    <h1>reportlists</h1>
-    <p>站点建设中（M2 上线）— 数据管道开发中</p>
+    <div class="activebar">
+      <div class="chips" id="activeFilters"></div>
+      <div class="resultstat" id="resultStat"></div>
+    </div>
+    <div id="progress" class="progress hidden">
+      <div class="bar"><i id="progressBar"></i></div>
+      <span id="progressText"></span>
+    </div>
+    <div class="list" id="list"></div>
+    <div id="empty" class="empty hidden"></div>
+    <div id="sentinel" class="sentinel"></div>
   </main>
+</div>
+
+<footer>
+    <div>数据来源：东方财富研报中心 · 元数据 <span id="footTotal">-</span> 条（2017-01 至今，每日更新）· 报告版权归原作者及各券商所有</div>
+    <div>点击报告卡片将在新标签打开 pdf.dfcfw.com 原文；如遇空白页或验证页，刷新一次即可通过。本站仅做元数据索引与外链，不存储任何 PDF 内容。</div>
+    <div><a href="https://github.com/metatools2023/reportlists" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+</footer>
+
+<div id="toast" class="toast hidden"></div>
+<noscript><div class="empty">本站需要启用 JavaScript 才能浏览与搜索数据。</div></noscript>
+<script src="app.js?v=6"></script>
 </body>
 </html>
