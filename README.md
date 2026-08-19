@@ -32,7 +32,7 @@ M1 数据管道已完成（2026-08-19，本地 + CI 全链路验证通过）：
 - [x] build_index.py：tags.json（5 维度）+ index-YYYY.json（按年搜索索引）
 - [x] update-daily.yml：cron 08:00 UTC + push 触发 + change-only 部署（concurrency 串行 + pull --rebase 防竞态）
 - [x] backfill.yml：手动分批灾备（默认 35 单元/次）
-- [ ] 全量历史回填执行（345 单元 ≈ 10 批，本地运行中）
+- [x] 全量历史回填完成（2026-08-19）：348 单元 0 失败，433,585 条（2017-01 → 2026-08），116 分片已上线
 
 M2 前端站点：待开发
 
