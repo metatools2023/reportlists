@@ -31,11 +31,17 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install Python deps (build_stats 热词提取)
+        run: pip install jieba
+
       - name: Fetch yesterday's reports
         run: python3 scripts/fetch_reports.py --repo-root .
 
       - name: Build index
         run: python3 scripts/build_index.py --repo-root .
+
+      - name: Build stats
+        run: python3 scripts/build_stats.py --repo-root .
 
       - name: Commit data if changed
         id: commit

@@ -19,8 +19,9 @@ GitHub Actions（每日增量 + 手动回填灾备）
 
 ```
 .github/workflows/   update-daily.yml（每日增量+部署）/ backfill.yml（历史回填灾备）
-scripts/             fetch_reports.py / backfill.py / build_index.py
+scripts/             fetch_reports.py / backfill.py / build_index.py / build_stats.py
 site/                index.html + app.js + style.css + data/（生成物）
+analysis/            本地数据挖掘环境（gitignore 不入库：DuckDB 直查分片 + 指标探索）
 ```
 
 ## 状态
@@ -34,7 +35,7 @@ M1 数据管道 + M2 前端站点已完成（2026-08-19，本地 + CI + 线上�
 - [x] 全量历史回填：348 单元 0 失败，433,585 条（2017-01 → 2026-08），116 分片
 - [x] 前端：日期倒序列表 / 标签云（行业/机构/评级/研究员/个股）/ 多维组合筛选 / 搜索（自动扩围近 1 年，可选全库）/ 月份分片懒加载 / hash 状态分享 / 移动端适配
 
-M3 打磨（SEO sitemap、统计页）待开发。
+M3 打磨进行中：统计页（数据挖掘四方向：卖方情绪指数 / 行业热度热力图 / 标题热词词云 / 机构·研究员画像）前端已完成（`stats.html` 8 板块锚点单页，ECharts CDN），待挂 CI 每日管道（P4）后上线；SEO sitemap 待开发。
 
 ## License
 

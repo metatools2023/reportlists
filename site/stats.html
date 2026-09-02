@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据洞察 · reportlists 券商研报统计</title>
+  <meta name="description" content="43 万+ 券商研报元数据的数据挖掘：卖方情绪指数、行业热度热力图、年度热词、机构与研究员画像、发布节奏（财报季效应）。">
+  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="stats.css?v=1">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="logo">reportlists</span>
+    <span class="sub">数据洞察</span>
+  </div>
+  <nav class="pagenav">
+    <a href="./">研报列表</a>
+    <a href="stats" class="on">统计</a>
+  </nav>
+  <nav class="secnav" id="secnav" aria-label="板块导航">
+    <a href="#overview">概览</a>
+    <a href="#trend">发布趋势</a>
+    <a href="#sentiment">情绪指数</a>
+    <a href="#heatmap">行业热度</a>
+    <a href="#rhythm">发布节奏</a>
+    <a href="#keywords">年度热词</a>
+    <a href="#orgs">机构榜</a>
+    <a href="#researchers">研究员榜</a>
+    <a href="#methodology">口径</a>
+  </nav>
+</header>
+
+<main class="stats">
+  <div id="err" class="empty hidden">统计数据加载失败，请稍后刷新重试。<div class="sub" id="errDetail"></div></div>
+
+  <section class="sec" id="overview">
+    <h2>概览</h2>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section class="sec" id="trend">
+    <h2>发布趋势</h2>
+    <div class="note">月度发布量按报告类型堆叠（个股 / 行业 / 策略），叠加卖方情绪指数（右轴，3 月移动平均）。</div>
+    <div class="chart" id="cTrend"></div>
+  </section>
+
+  <section class="sec" id="sentiment">
+    <h2>卖方情绪指数</h2>
+    <div class="note">情绪指数 = Σ(买入×1 + 增持×0.5 − 减持×0.5 − 卖出×1) ÷ 有效评级数。<b>仅统计给出评级的报告</b>（策略报告多无评级）。</div>
+    <div class="chart" id="cSenti"></div>
+    <div class="note" style="margin-top:14px">评级结构：各档评级占当月有效评级报告的比例（100% 堆叠）。</div>
+    <div class="chart" id="cRating"></div>
+  </section>
+
+  <section class="sec" id="heatmap">
+    <h2>行业热度热力图</h2>
+    <div class="note">Top 30 行业（按全库总量）逐月研报数量，颜色越深热度越高。可拖动底部滑块缩放。</div>
+    <div class="chart tall" id="cHeat"></div>
+  </section>
+
+  <section class="sec" id="rhythm">
+    <h2>发布节奏</h2>
+    <div class="note">星期分布 / 月份分布（财报季效应：4 月年报季、8 月中报季双峰）/ 月内分布（按历法天数归一，平均每出现 1 次的数量）。</div>
+    <div class="grid3">
+      <div class="chart" id="cWeekday"></div>
+      <div class="chart" id="cMoy"></div>
+      <div class="chart" id="cDom"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="keywords">
+    <h2>年度热词</h2>
+    <div class="note">jieba TF-IDF 从全部标题提取关键词，剔除报告体词（点评/周报等）、数字年份、行业名与机构名后按年计数。</div>
+    <div class="kwbtns" id="kwBtns"></div>
+    <div class="chart" id="cKw"></div>
+  </section>
+
+  <section class="sec" id="orgs">
+    <h2>机构榜 · Top 50</h2>
+    <div class="note">按研报总量排序；点击表头可切换排序。买入占比分母为该机构<b>含评级</b>报告数。</div>
+    <div id="orgsTable"></div>
+  </section>
+
+  <section class="sec" id="researchers">
+    <h2>研究员榜 · Top 50</h2>
+    <div class="note">按 (姓名, 机构) 聚合去重（同名不同机构视为不同人）。合作者 = 同报告署名过的其他研究员去重数。</div>
+    <div id="researchersTable"></div>
+  </section>
+
+  <section class="sec" id="methodology">
+    <h2>数据口径说明</h2>
+    <div class="method">
+      <ul>
+        <li><b>数据来源</b>：东方财富研报中心元数据（个股 / 行业 / 策略三类），2017-01 起每日增量更新，全库 <span id="mTotal">-</span> 条。</li>
+        <li><b>评级归一</b>：全库实测 22 种原始评级名归并为买入 / 增持 / 中性 / 减持 / 卖出五档（如"强烈推荐/BUY"→买入，"持有/同步大市"→中性）。约 44% 的报告无评级（策略报告为主），不计入情绪指数与买入占比分母。</li>
+        <li><b>情绪指数</b> = Σ(买入×1 + 增持×0.5 + 中性×0 − 减持×0.5 − 卖出×1) ÷ 当月有效评级数；买入占比 = 买入档 ÷ 有效评级数。</li>
+        <li><b>行业热度</b>：仅展示全库总量 Top 30 行业（行业分布长尾，Top 30 约覆盖全库三分之一）。</li>
+        <li><b>年度热词</b>：jieba TF-IDF（每标题 topK=6），经停用词表、数字年份正则、行业名与机构名过滤后按年计数 Top 40。</li>
+        <li><b>研究员</b>：按 (姓名, 机构) 二元组聚合，全库共 <span id="mRes">-</span> 个组合；跨机构同名视为不同人，跳槽不合并。</li>
+        <li><b>月内分布</b>：按历法天数归一（31 日仅在 7 个月份出现，原始计数会失真），展示"每个该日平均报告数"。</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+    <div>数据来源：东方财富研报中心 · 统计口径见上方说明 · 报告版权归原作者及各券商所有</div>
+    <div>本站仅做元数据索引、统计与外链，不存储任何 PDF 内容。统计更新于 <span id="genAt">-</span></div>
+    <div><a href="./">研报列表</a> · <a href="https://github.com/metatools2023/reportlists" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"
+        onload="window.__wcReady=1" onerror="window.__wcReady=0"></script>
+<script src="stats.js?v=1"></script>
+</body>
+</html>
